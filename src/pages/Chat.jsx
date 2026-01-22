@@ -23,6 +23,7 @@ const Chat = () => {
   useEffect(() => {
     if (!user) return;
     
+    // Escuchar chats donde yo estoy incluido
     const q = query(
       collection(db, "chats"), 
       where("participants", "array-contains", user.uid),
@@ -32,7 +33,7 @@ const Chat = () => {
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const chatData = snapshot.docs.map(doc => {
         const data = doc.data();
-        // Calculamos quién es el "otro" participante
+        // ARREGLO: Calcular siempre quién es el otro usuario
         const otherUser = data.users.find(u => u.uid !== user.uid) || { name: "Usuario", avatar: null };
         return { id: doc.id, ...data, otherUser };
       });
@@ -42,7 +43,7 @@ const Chat = () => {
     return () => unsubscribe();
   }, [user]);
 
-  // 2. CARGAR MENSAJES (Solo si hay chat seleccionado con ID válido)
+  // 2. CARGAR MENSAJES
   useEffect(() => {
     if (!selectedChat?.id) return;
 
@@ -54,14 +55,14 @@ const Chat = () => {
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const msgs = snapshot.docs.map(doc => doc.data());
       setMessages(msgs);
-      // Scroll al fondo al recibir mensaje
+      // Scroll automático al fondo
       setTimeout(() => scrollRef.current?.scrollIntoView({ behavior: "smooth" }), 100);
     });
 
     return () => unsubscribe();
   }, [selectedChat?.id]);
 
-  // 3. BUSCAR USUARIOS (CORREGIDO EL BUG DEL UID)
+  // 3. BUSCAR USUARIOS (AQUÍ ESTABA EL ERROR)
   useEffect(() => {
     const searchUsers = async () => {
       if (!searchQuery.trim()) {
@@ -79,12 +80,16 @@ const Chat = () => {
         );
         const snapshot = await getDocs(q);
         
-        // CORRECCIÓN CRÍTICA:
-        // Aseguramos que el UID venga del ID del documento si no está en la data
+        // --- CORRECCIÓN CRÍTICA ---
+        // Usamos 'doc.id' como 'uid' para asegurar que siempre tenemos el ID real
         const results = snapshot.docs
-          .map(doc => ({ uid: doc.id, ...doc.data() })) 
+          .map(doc => ({ 
+             uid: doc.id,  // <--- ESTO ES LO QUE FALTABA
+             ...doc.data() 
+          }))
           .filter(u => u.uid !== user.uid); 
-        
+        // ---------------------------
+
         setSearchResults(results);
       } catch (error) { console.error(error); }
     };
@@ -95,12 +100,13 @@ const Chat = () => {
 
   // 4. CREAR O SELECCIONAR CHAT
   const handleSelectUserFromSearch = async (userResult) => {
+    // PROTECCIÓN: Si no hay UID, paramos para no romper la base de datos
     if (!userResult.uid) {
-        console.error("Error: El usuario seleccionado no tiene UID");
+        console.error("ERROR: Usuario sin UID. No se puede crear el chat.");
         return;
     }
 
-    // A. Comprobar si ya existe chat con este UID
+    // A. Comprobar si ya existe en la lista cargada
     const existingChat = chats.find(chat => 
       chat.participants.includes(userResult.uid)
     );
@@ -108,7 +114,7 @@ const Chat = () => {
     if (existingChat) {
       setSelectedChat(existingChat);
     } else {
-      // B. CREAR CHAT NUEVO EN FIREBASE
+      // B. Si no existe, CREARLO EN FIREBASE
       const newChatData = {
         participants: [user.uid, userResult.uid], 
         users: [ 
@@ -122,8 +128,7 @@ const Chat = () => {
       try {
           const docRef = await addDoc(collection(db, "chats"), newChatData);
           
-          // CORRECCIÓN VISUAL: 
-          // Construimos el objeto 'otherUser' manualmente para que se vea el nombre al instante
+          // Establecemos el chat seleccionado manualmente para verlo al instante
           setSelectedChat({ 
               id: docRef.id, 
               ...newChatData, 
@@ -158,12 +163,12 @@ const Chat = () => {
           createdAt: serverTimestamp()
         });
 
-        // B. Actualizar Chat (para que el otro usuario vea la notificación/cambio)
+        // B. Actualizar Chat Padre (CRUCIAL PARA QUE APAREZCA ARRIBA)
         await updateDoc(doc(db, "chats", selectedChat.id), {
           lastMessage: { 
               text: msgText, 
               senderId: user.uid,
-              timestamp: new Date() // Usamos fecha local para evitar delay visual
+              timestamp: new Date()
           },
           updatedAt: serverTimestamp()
         });
@@ -172,12 +177,10 @@ const Chat = () => {
     }
   };
 
-  // Helper seguro para obtener datos del header
+  // Helper para header
   const getHeaderInfo = () => {
     if (!selectedChat) return { name: "", avatar: null };
     if (selectedChat.otherUser) return selectedChat.otherUser;
-    
-    // Fallback: buscar en el array users si otherUser falla
     const found = selectedChat.users?.find(u => u.uid !== user.uid);
     return found || { name: "Usuario", avatar: null };
   };
@@ -251,6 +254,12 @@ const Chat = () => {
                       </div>
                     </div>
                   ))}
+                  
+                  {chats.length === 0 && (
+                      <div className="p-8 text-center text-slate-500">
+                          <p>No hay chats activos</p>
+                      </div>
+                  )}
                 </div>
             )}
           </div>
