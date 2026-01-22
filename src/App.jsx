@@ -17,6 +17,8 @@ import Details from './pages/Details';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Profile from './pages/Profile';
+import PostDetail from './pages/PostDetail';
+import Chat from './pages/Chat';
 
 import { ThemeProvider } from './context/ThemeContext';
 
@@ -46,6 +48,9 @@ const App = () => {
               <Route path="/series/:id" element={<Details type="series" />} />
               <Route path="/game/:id" element={<Details type="game" />} />
               <Route path="/anime/:id" element={<Details type="anime" />} />
+              <Route path="/forum" element={<Forum />} />
+              <Route path="/forum/post/:postId" element={<PostDetail />} />
+              <Route path="/chat" element={<Chat />} />
             </Routes>
           </main>
 
