@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { useSearchParams } from 'react-router-dom'; // <--- IMPORTANTE
+import { useSearchParams } from 'react-router-dom'; // <--- IMPORTANTE: Importamos useSearchParams
 import { db } from '../services/firebase';
 import { 
   collection, query, where, onSnapshot, addDoc, 
@@ -10,7 +10,8 @@ import { Send, Search, User, MessageCircle, ArrowLeft } from 'lucide-react';
 
 const Chat = () => {
   const { user } = useAuth();
-  const [searchParams, setSearchParams] = useSearchParams(); // Control de URL
+  // Hook para manejar los parámetros de búsqueda en la URL (?chatId=...)
+  const [searchParams, setSearchParams] = useSearchParams(); 
   
   const [chats, setChats] = useState([]);
   const [selectedChat, setSelectedChat] = useState(null);
@@ -42,10 +43,13 @@ const Chat = () => {
       setChats(chatData);
 
       // --- LÓGICA DE PERSISTENCIA (F5) ---
-      // Si hay un ID en la URL y aún no tenemos chat seleccionado, lo buscamos
+      // Obtenemos el ID del chat de la URL
       const urlChatId = searchParams.get('chatId');
+      // Si hay un ID en la URL y tenemos chats cargados...
       if (urlChatId && chatData.length > 0) {
+        // Buscamos el chat correspondiente en la lista
         const chatToRestore = chatData.find(c => c.id === urlChatId);
+        // Si lo encontramos, lo establecemos como seleccionado
         if (chatToRestore) {
           setSelectedChat(chatToRestore);
         }
