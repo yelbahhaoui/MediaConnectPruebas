@@ -1,13 +1,16 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { auth, db } from "../services/firebase"; // <--- IMPORTANTE: Importar db
+import { auth, db } from "../services/firebase";
 import { 
   createUserWithEmailAndPassword, 
   signInWithEmailAndPassword, 
   signOut, 
   onAuthStateChanged,
-  updateProfile
+  updateProfile,
+  GoogleAuthProvider, // <--- IMPORTANTE
+  GithubAuthProvider, // <--- IMPORTANTE
+  signInWithPopup     // <--- IMPORTANTE
 } from "firebase/auth";
-import { doc, setDoc } from "firebase/firestore"; // <--- IMPORTANTE: Importar doc y setDoc
+import { doc, setDoc, getDoc } from "firebase/firestore";
 
 const AuthContext = createContext();
 
@@ -17,27 +20,55 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // --- FUNCIÓN DE REGISTRO CORREGIDA ---
+  // --- REGISTRO EMAIL/PASS (Ya lo tenías) ---
   const signup = async (email, password, username) => {
-    // 1. Crear usuario en Authentication
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     const newUser = userCredential.user;
-    
-    // 2. Actualizar perfil básico
     await updateProfile(newUser, { displayName: username });
     
-    // 3. ¡ESTO ES LO QUE TE FALTABA! Guardar en la Base de Datos
+    // Guardar en Firestore
     await setDoc(doc(db, "users", newUser.uid), {
       uid: newUser.uid,
-      displayName: username, // El buscador busca esto
+      displayName: username,
       email: email,
       photoURL: null,
       createdAt: new Date()
     });
   };
-  // -------------------------------------
 
   const login = (email, password) => signInWithEmailAndPassword(auth, email, password);
+
+  // --- NUEVA FUNCIÓN: LOGIN SOCIAL (GOOGLE/GITHUB) ---
+  const loginWithSocial = async (providerName) => {
+    let provider;
+    if (providerName === 'google') provider = new GoogleAuthProvider();
+    if (providerName === 'github') provider = new GithubAuthProvider();
+
+    try {
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+
+      // VERIFICAR SI EL USUARIO YA EXISTE EN BASE DE DATOS
+      const docRef = doc(db, "users", user.uid);
+      const docSnap = await getDoc(docRef);
+
+      // Si NO existe (es la primera vez que entra), lo guardamos
+      if (!docSnap.exists()) {
+        await setDoc(docRef, {
+          uid: user.uid,
+          displayName: user.displayName,
+          email: user.email,
+          photoURL: user.photoURL, // Guardamos su foto de Google/GitHub
+          createdAt: new Date(),
+          provider: providerName
+        });
+      }
+      return user;
+    } catch (error) {
+      console.error("Error social login:", error);
+      throw error;
+    }
+  };
 
   const logout = () => signOut(auth);
 
@@ -50,8 +81,8 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, signup, login, logout, loading }}>
-      {!loading && children}
+    <AuthContext.Provider value={{ user, signup, login, logout, loginWithSocial, loading }}>
+      {children}
     </AuthContext.Provider>
   );
 };
