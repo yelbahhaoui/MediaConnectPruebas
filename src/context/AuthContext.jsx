@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { auth } from "../services/firebase";
+import { auth, db } from "../services/firebase"; // <--- IMPORTANTE: Importar db
 import { 
   createUserWithEmailAndPassword, 
   signInWithEmailAndPassword, 
@@ -7,6 +7,7 @@ import {
   onAuthStateChanged,
   updateProfile
 } from "firebase/auth";
+import { doc, setDoc } from "firebase/firestore"; // <--- IMPORTANTE: Importar doc y setDoc
 
 const AuthContext = createContext();
 
@@ -16,20 +17,30 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Registro
+  // --- FUNCIÓN DE REGISTRO CORREGIDA ---
   const signup = async (email, password, username) => {
+    // 1. Crear usuario en Authentication
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-    // Actualizamos el nombre del usuario inmediatamente
-    await updateProfile(userCredential.user, { displayName: username });
+    const newUser = userCredential.user;
+    
+    // 2. Actualizar perfil básico
+    await updateProfile(newUser, { displayName: username });
+    
+    // 3. ¡ESTO ES LO QUE TE FALTABA! Guardar en la Base de Datos
+    await setDoc(doc(db, "users", newUser.uid), {
+      uid: newUser.uid,
+      displayName: username, // El buscador busca esto
+      email: email,
+      photoURL: null,
+      createdAt: new Date()
+    });
   };
+  // -------------------------------------
 
-  // Login
   const login = (email, password) => signInWithEmailAndPassword(auth, email, password);
 
-  // Logout
   const logout = () => signOut(auth);
 
-  // Escuchar cambios de sesión (Login/Logout)
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
