@@ -21,7 +21,6 @@ const Chat = () => {
   const [isSearching, setIsSearching] = useState(false);
   const [loadingChats, setLoadingChats] = useState(true);
   
-  // CAMBIO 1: Referencia al CONTENEDOR, no a un div invisible
   const messagesContainerRef = useRef(null);
 
   // 1. CARGAR LISTA DE CHATS
@@ -58,7 +57,7 @@ const Chat = () => {
     }
   }, [searchParams, chats, loadingChats]);
 
-  // 3. CARGAR MENSAJES Y SCROLL SUAVE (SIN SALTOS DE PÁGINA)
+  // 3. CARGAR MENSAJES Y SCROLL
   useEffect(() => {
     if (!selectedChat?.id) return;
 
@@ -71,8 +70,7 @@ const Chat = () => {
       const msgs = snapshot.docs.map(doc => doc.data());
       setMessages(msgs);
       
-      // CAMBIO 2: Usamos scrollTop en lugar de scrollIntoView
-      // Esto fuerza el scroll SOLO dentro del contenedor gris, sin mover la página entera.
+      // Scroll al final sin mover la pantalla entera
       setTimeout(() => {
         if (messagesContainerRef.current) {
           messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
@@ -181,11 +179,16 @@ const Chat = () => {
   const headerInfo = getHeaderInfo();
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-slate-950 pt-20 pb-10 px-4 transition-colors duration-300">
-      <div className="max-w-6xl mx-auto bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-800 overflow-hidden h-[80vh] flex">
+    // Ajuste de altura para móvil (calc(100vh - header))
+    <div className="h-[calc(100vh-4rem)] md:min-h-screen bg-gray-50 dark:bg-slate-950 pt-20 pb-4 px-0 md:px-4 transition-colors duration-300">
+      <div className="max-w-6xl mx-auto bg-white dark:bg-slate-900 md:rounded-2xl shadow-none md:shadow-xl border-x md:border border-slate-200 dark:border-slate-800 overflow-hidden h-full flex">
         
-        {/* SIDEBAR */}
-        <div className={`w-full md:w-1/3 border-r border-slate-200 dark:border-slate-800 flex flex-col ${selectedChat ? 'hidden md:flex' : 'flex'}`}>
+        {/* --- COLUMNA IZQUIERDA (LISTA) --- 
+            Lógica: Si hay chat seleccionado, se oculta en móvil (hidden). 
+            Si NO hay chat, se muestra (flex).
+            En escritorio (md:flex) siempre se muestra.
+        */}
+        <div className={`w-full md:w-1/3 border-r border-slate-200 dark:border-slate-800 flex-col ${selectedChat ? 'hidden md:flex' : 'flex'}`}>
           <div className="p-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/50">
             <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-4">Mensajes</h2>
             <div className="relative">
@@ -250,19 +253,25 @@ const Chat = () => {
           </div>
         </div>
 
-        {/* CHAT AREA */}
-        <div className={`w-full md:w-2/3 flex flex-col bg-slate-50 dark:bg-black/20 ${!selectedChat ? 'hidden md:flex' : 'flex'}`}>
+        {/* --- COLUMNA DERECHA (CONVERSACIÓN) --- 
+            Lógica: Si hay chat seleccionado, se muestra (flex).
+            Si NO hay chat, se oculta en móvil (hidden).
+            En escritorio (md:flex) se muestra siempre.
+        */}
+        <div className={`w-full md:w-2/3 flex-col bg-slate-50 dark:bg-black/20 ${selectedChat ? 'flex' : 'hidden md:flex'}`}>
           {selectedChat ? (
             <>
               <div className="p-4 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center gap-3 shadow-sm z-10">
+                {/* Botón Volver (Solo visible en móvil) */}
                 <button onClick={() => { setSelectedChat(null); setSearchParams({}); }} className="md:hidden p-2 hover:bg-slate-100 rounded-full text-slate-500"><ArrowLeft size={20}/></button>
+                
                 <div className="w-10 h-10 rounded-full bg-blue-100 overflow-hidden flex items-center justify-center">
                    {headerInfo.avatar ? <img src={headerInfo.avatar} className="w-full h-full object-cover"/> : <User className="text-slate-500"/>}
                 </div>
                 <h3 className="font-bold text-lg text-slate-900 dark:text-white">{headerInfo.name}</h3>
               </div>
 
-              {/* CAMBIO 3: Asignamos el REF al contenedor de mensajes, no a un div vacío */}
+              {/* Contenedor de Mensajes */}
               <div 
                 ref={messagesContainerRef} 
                 className="flex-1 overflow-y-auto p-4 space-y-4"
@@ -271,7 +280,7 @@ const Chat = () => {
                   const isMe = msg.senderId === user.uid;
                   return (
                     <div key={index} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
-                      <div className={`max-w-[75%] px-4 py-2 rounded-2xl ${msg.senderId === user.uid ? 'bg-blue-600 text-white rounded-br-none' : 'bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700 rounded-bl-none shadow-sm'}`}>
+                      <div className={`max-w-[85%] md:max-w-[70%] px-4 py-2 rounded-2xl ${msg.senderId === user.uid ? 'bg-blue-600 text-white rounded-br-none' : 'bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700 rounded-bl-none shadow-sm'}`}>
                         <p>{msg.text}</p>
                         <p className={`text-[10px] mt-1 text-right ${isMe ? 'text-blue-200' : 'text-slate-400'}`}>
                            {msg.createdAt?.seconds ? new Date(msg.createdAt.seconds * 1000).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '...'}
@@ -283,7 +292,7 @@ const Chat = () => {
               </div>
 
               <form onSubmit={handleSendMessage} className="p-4 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 flex gap-2">
-                <input type="text" value={newMessage} onChange={(e) => setNewMessage(e.target.value)} placeholder="Escribe un mensaje..." className="flex-1 bg-slate-100 dark:bg-slate-800 border-none rounded-full px-4 py-3 focus:ring-2 focus:ring-blue-500 dark:text-white outline-none" />
+                <input type="text" value={newMessage} onChange={(e) => setNewMessage(e.target.value)} placeholder="Mensaje..." className="flex-1 bg-slate-100 dark:bg-slate-800 border-none rounded-full px-4 py-3 focus:ring-2 focus:ring-blue-500 dark:text-white outline-none" />
                 <button type="submit" disabled={!newMessage.trim()} className="bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-full transition-colors disabled:opacity-50"><Send size={20} /></button>
               </form>
             </>
