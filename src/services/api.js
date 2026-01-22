@@ -136,21 +136,7 @@ export const searchUsers = async (searchTerm) => {
     // Simulamos búsqueda "empieza por"
     const endTerm = searchTerm + '\uf8ff';
     
-    // Importamos query y where dinámicamente o asumimos que ya están importados arriba si los usas
-    // Asegúrate de tener: import { query, where, limit } from "firebase/firestore";
-    // Aquí hago un fetch manual simple filtrando en cliente si no quieres complicar imports, 
-    // pero lo ideal es usar query de firestore:
-    
-    // Vamos a usar la importación que ya tienes arriba:
-    const { query, where, limit } = require("firebase/firestore"); // Fallback si no está importado
-    
-    // Si usas Vite/ESM asegúrate de tener los imports arriba. 
-    // Como pediste "copiar y pegar", asumo que en tu archivo original tienes los imports.
-    // Voy a asumir que has importado 'query', 'where', 'limit' arriba junto a 'collection'.
-    // Si no, añádelos en la línea 2.
-    
-    // Dejaremos esto comentado para que no rompa si faltan imports, 
-    // pero la lógica es la del paso anterior.
+    const { query, where, limit } = require("firebase/firestore"); 
     return []; 
   } catch (error) {
     console.error("Error buscando usuarios:", error);
