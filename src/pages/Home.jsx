@@ -90,21 +90,21 @@ const Home = () => {
             </Link>
             <Link to="/series" className={cardClass}>
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent z-10"></div>
-              <img src="https://image.tmdb.org/t/p/w500/u3bZgnGQ9TWA75EGyzkkn4YAU9X.jpg" alt="Series" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+              <img src="https://www.themoviedb.org/t/p/w600_and_h900_face/ztkUQFLlC19CCMYHW9o1zWhJRNq.jpg" alt="Series" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
               <div className="absolute bottom-4 left-4 z-20 flex items-center gap-2 text-white">
                 <Tv size={20} /> <span className="font-bold">Series</span>
               </div>
             </Link>
             <Link to="/anime" className={cardClass}>
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent z-10"></div>
-              <img src="https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx154587-g41c2i8C7a6s.jpg" alt="Anime" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+              <img src="https://www.themoviedb.org/t/p/w600_and_h900_face/nTnO9LyAm20NMR4NBA5eeHaIskN.jpg" alt="Anime" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
               <div className="absolute bottom-4 left-4 z-20 flex items-center gap-2 text-white">
                 <Tv size={20} /> <span className="font-bold">Anime</span>
               </div>
             </Link>
             <Link to="/games" className={cardClass}>
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent z-10"></div>
-              <img src="https://media.rawg.io/media/games/20a/20aa03a10cda45239fe22d035c0ebe64.jpg" alt="Games" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+              <img src="https://store-images.s-microsoft.com/image/apps.47379.63407868131364914.bcaa868c-407e-42c2-baeb-48a3c9f29b54.89bb995b-b066-4a53-9fe4-0260ce07e894" alt="Games" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
               <div className="absolute bottom-4 left-4 z-20 flex items-center gap-2 text-white">
                 <Gamepad2 size={20} /> <span className="font-bold">Juegos</span>
               </div>
