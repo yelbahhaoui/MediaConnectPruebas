@@ -152,7 +152,7 @@ const Navbar = () => {
                <Link to="/series" className="block px-3 py-3 rounded-md text-base font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800">Series</Link>
                <Link to="/anime" className="block px-3 py-3 rounded-md text-base font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800">Anime</Link>
                <Link to="/games" className="block px-3 py-3 rounded-md text-base font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800">Videojuegos</Link>
-               <Link to="/forum" className="block px-3 py-3 rounded-md text-base font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-2">
+               <Link to="/forum" className="block px-3 py-3 rounded-md text-base font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 items-center gap-2">
                  <MessageSquare size={18} /> Foros
                </Link>
              </div>
@@ -173,11 +173,11 @@ const Navbar = () => {
                      </div>
                    </div>
 
-                   <Link to="/profile" className="block px-3 py-3 rounded-md text-base font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-2">
+                   <Link to="/profile" className="block px-3 py-3 rounded-md text-base font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800  items-center gap-2">
                      <Settings size={18} className="text-blue-500" /> Configuración
                    </Link>
 
-                   <Link to="/profile" className="block px-3 py-3 rounded-md text-base font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-2">
+                   <Link to="/profile" className="block px-3 py-3 rounded-md text-base font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800  items-center gap-2">
                      <Heart size={18} className="text-red-500" /> Mis Favoritos
                    </Link>
                    
